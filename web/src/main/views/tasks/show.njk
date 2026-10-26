@@ -1,0 +1,71 @@
+{% extends "template.njk" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set pageTitle = task.title %}
+
+{% set dueHtml %}
+  {{ task.dueAt | formatDateTime }}
+  {% if task.overdue %}
+    {{ govukTag({ text: "Overdue", classes: "govuk-tag--red" }) }}
+  {% endif %}
+{% endset %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back to tasks", href: "/tasks" }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if created %}
+        {{ govukNotificationBanner({ type: "success", text: "Task created" }) }}
+      {% elif updated %}
+        {{ govukNotificationBanner({ type: "success", text: "Status changed to " + (task.status | statusLabel | lower) }) }}
+      {% endif %}
+
+      <span class="govuk-caption-l">Task</span>
+      <h1 class="govuk-heading-l">{{ task.title }}</h1>
+
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: { text: "Description" },
+            value: { text: task.description if task.description else "None" }
+          },
+          {
+            key: { text: "Status" },
+            value: { html: govukTag({ text: task.status | statusLabel, classes: task.status | statusTagClass }) },
+            actions: {
+              items: [
+                { href: "/tasks/" + task.id + "/status", text: "Change", visuallyHiddenText: "status" }
+              ]
+            }
+          },
+          {
+            key: { text: "Due" },
+            value: { html: dueHtml }
+          },
+          {
+            key: { text: "Created" },
+            value: { text: task.createdAt | formatDateTime }
+          },
+          {
+            key: { text: "Last updated" },
+            value: { text: task.updatedAt | formatDateTime }
+          }
+        ]
+      }) }}
+
+      {{ govukButton({
+        text: "Delete task",
+        href: "/tasks/" + task.id + "/delete",
+        classes: "govuk-button--warning"
+      }) }}
+    </div>
+  </div>
+{% endblock %}

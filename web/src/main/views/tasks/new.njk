@@ -1,0 +1,90 @@
+{% extends "template.njk" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set pageTitle = "Create a task" %}
+
+{# On first load there are no errors, so default to empty. #}
+{% set errors = errorMessages or {} %}
+{% set dateParts = dateErrorParts or [] %}
+{% set dateError = "govuk-input--error" %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/tasks" }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorList and errorList.length %}
+        {{ govukErrorSummary({ titleText: "There is a problem", errorList: errorList }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-l">Create a task</h1>
+
+      <form method="post" action="/tasks" novalidate>
+        {{ govukInput({
+          label: { text: "Title", classes: "govuk-label--m" },
+          id: "title",
+          name: "title",
+          value: form.title,
+          errorMessage: { text: errors.title } if errors.title else false
+        }) }}
+
+        {{ govukTextarea({
+          label: { text: "Description (optional)", classes: "govuk-label--m" },
+          id: "description",
+          name: "description",
+          value: form.description,
+          errorMessage: { text: errors.description } if errors.description else false
+        }) }}
+
+        {{ govukRadios({
+          name: "status",
+          fieldset: { legend: { text: "Status", classes: "govuk-fieldset__legend--m" } },
+          value: form.status,
+          errorMessage: { text: errors.status } if errors.status else false,
+          items: [
+            { value: "TODO", text: "TODO" | statusLabel },
+            { value: "IN_PROGRESS", text: "IN_PROGRESS" | statusLabel },
+            { value: "DONE", text: "DONE" | statusLabel }
+          ]
+        }) }}
+
+        {{ govukDateInput({
+          id: "dueDate",
+          namePrefix: "dueDate",
+          fieldset: { legend: { text: "Due date", classes: "govuk-fieldset__legend--m" } },
+          hint: { text: "For example, 27 3 2027" },
+          errorMessage: { text: errors.dueDate } if errors.dueDate else false,
+          items: [
+            { name: "day", label: "Day", classes: "govuk-input--width-2" + (" " + dateError if "day" in dateParts else ""), value: form.dueDay },
+            { name: "month", label: "Month", classes: "govuk-input--width-2" + (" " + dateError if "month" in dateParts else ""), value: form.dueMonth },
+            { name: "year", label: "Year", classes: "govuk-input--width-4" + (" " + dateError if "year" in dateParts else ""), value: form.dueYear }
+          ]
+        }) }}
+
+        {{ govukInput({
+          label: { text: "Due time", classes: "govuk-label--m" },
+          hint: { text: "For example, 9:30am or 14:30" },
+          id: "dueTime",
+          name: "dueTime",
+          classes: "govuk-input--width-5",
+          value: form.dueTime,
+          errorMessage: { text: errors.dueTime } if errors.dueTime else false
+        }) }}
+
+        <div class="govuk-button-group">
+          {{ govukButton({ text: "Create task" }) }}
+          <a href="/tasks" class="govuk-link">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

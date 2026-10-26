@@ -1,0 +1,15 @@
+{% extends "govuk/template.njk" %}
+
+{# Each page sets `pageTitle`. GOV.UK convention: "Page - Service - GOV.UK", with "Error: " first if the form has errors. #}
+{% block pageTitle %}
+  {%- if errorList and errorList.length %}Error: {% endif %}{{ pageTitle }} - {{ serviceName }} - GOV.UK
+{%- endblock %}
+
+{% block head %}
+  {% include "webpack/css.njk" %}
+{% endblock %}
+
+{% block bodyEnd %}
+  {# Run JavaScript at end of the <body>, to avoid blocking the initial render. #}
+  {% include "webpack/js.njk" %}
+{% endblock %}
